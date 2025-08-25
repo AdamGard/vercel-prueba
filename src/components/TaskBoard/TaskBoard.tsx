@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import TaskCard from '../TaskCard/TaskCard';
 import { useFilter } from '../../context/FilterContext';
 import type { Task, Status } from '../../types';
@@ -73,9 +73,19 @@ const mockTasks: Task[] = [
   },
 ];
 
-const TaskBoard: React.FC = () => {
+type TaskBoardProps = {
+  initialTasks?: Task[];
+};
+
+const TaskBoard: React.FC<TaskBoardProps> = ({ initialTasks = [] }) => {
   const [tasks, setTasks] = useState<Task[]>(mockTasks);
   const { selectedCategory, sortBy } = useFilter();
+
+  useEffect(() => {
+    if (initialTasks.length > 0) {
+      setTasks(prevTasks => [...prevTasks, ...initialTasks]);
+    }
+  }, [initialTasks]);
 
   const filteredAndSortedTasks = useMemo(() => {
     let filtered = tasks;
@@ -104,6 +114,17 @@ const TaskBoard: React.FC = () => {
             votes: task.hasUserVoted ? task.votes - 1 : task.votes + 1,
             hasUserVoted: !task.hasUserVoted,
           };
+        }
+        return task;
+      })
+    );
+  };
+
+  const handleStatusChange = (taskId: string, newStatus: Status) => {
+    setTasks(prevTasks =>
+      prevTasks.map(task => {
+        if (task.id === taskId) {
+          return { ...task, status: newStatus };
         }
         return task;
       })
@@ -146,6 +167,7 @@ const TaskBoard: React.FC = () => {
                   key={task.id}
                   task={task}
                   onVote={handleVote}
+                  onStatusChange={handleStatusChange}
                 />
               ))}
 

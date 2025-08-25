@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFilter } from '../../context/FilterContext';
-import type { Category, SortBy } from '../../types';
+import NewFeedbackModal from '../Modal/NewFeedbackModal';
+import type { Category, SortBy, Task } from '../../types';
 
 const categories: (Category | 'All Categories')[] = [
   'All Categories',
@@ -13,8 +14,19 @@ const categories: (Category | 'All Categories')[] = [
 
 const sortOptions: SortBy[] = ['Most Upvoted', 'Newest'];
 
-const Navbar: React.FC = () => {
+type NavbarProps = {
+  onNewFeedback?: (task: Omit<Task, 'id' | 'votes' | 'comments' | 'createdAt' | 'hasUserVoted'>) => void;
+};
+
+const Navbar: React.FC<NavbarProps> = ({ onNewFeedback }) => {
   const { selectedCategory, sortBy, setSelectedCategory, setSortBy } = useFilter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleNewFeedback = (task: Omit<Task, 'id' | 'votes' | 'comments' | 'createdAt' | 'hasUserVoted'>) => {
+    if (onNewFeedback) {
+      onNewFeedback(task);
+    }
+  };
 
   return (
     <nav className="flex justify-between items-center px-8 py-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md">
@@ -50,10 +62,19 @@ const Navbar: React.FC = () => {
           </select>
         </div>
 
-        <button className="px-6 py-3 bg-green-500 hover:bg-green-600 rounded-md font-semibold text-sm shadow transition">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="px-6 py-3 bg-green-500 hover:bg-green-600 rounded-md font-semibold text-sm shadow transition"
+        >
           New Feedback
         </button>
       </div>
+
+      <NewFeedbackModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleNewFeedback}
+      />
     </nav>
   );
 };

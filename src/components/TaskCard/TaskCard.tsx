@@ -1,14 +1,32 @@
-import React, { useState } from 'react';
-import type { Task } from '../../types';
-
+import React, { useState, useEffect } from 'react';
+import type { Task, Status } from '../../types';
 
 type TaskCardProps = {
   task: Task;
   onVote: (taskId: string) => void;
+  onStatusChange: (taskId: string, newStatus: Status) => void;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onVote }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onVote, onStatusChange }) => {
   const [isVoted, setIsVoted] = useState(task.hasUserVoted);
+  const [showMenu, setShowMenu] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (showMenu && !target.closest('.menu-container')) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [showMenu]);
 
   const handleVote = () => {
     setIsVoted(!isVoted);
@@ -41,7 +59,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onVote }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 mb-4">
+    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 border border-gray-200 mb-4 group">
       <div className="p-4 flex gap-4">
         <button
           onClick={handleVote}
@@ -62,7 +80,43 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onVote }) => {
         </button>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-tight">{task.title}</h3>
+          <div className="flex items-start justify-between">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 leading-tight flex-1">{task.title}</h3>
+            <div className="relative menu-container">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMenu(!showMenu);
+                }}
+                className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1 hover:bg-gray-100 rounded"
+              >
+                <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                </svg>
+              </button>
+              
+              {showMenu && (
+                <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-md shadow-lg z-20 min-w-48">
+                  {(['Open', 'In Progress', 'Complete'] as Status[])
+                    .filter(status => status !== task.status)
+                    .map(status => (
+                      <button
+                        key={status}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onStatusChange(task.id, status);
+                          setShowMenu(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 first:rounded-t-md last:rounded-b-md"
+                      >
+                        Move to {status}
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
+          </div>
+          
           <p className="text-gray-600 text-sm mb-4 leading-relaxed">
             {truncateDescription(task.description)}
           </p>
