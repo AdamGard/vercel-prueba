@@ -22,8 +22,10 @@ function App() {
 
   return (
     <FilterProvider>
-      <Navbar onNewFeedback={handleNewFeedback} />
-      <TaskBoard initialTasks={tasks} />
+      <div className="mt-24">
+        <Navbar onNewFeedback={handleNewFeedback} />
+        <TaskBoard initialTasks={tasks} />
+      </div>
     </FilterProvider>
   );
 }

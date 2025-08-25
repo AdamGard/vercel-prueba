@@ -29,7 +29,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNewFeedback }) => {
   };
 
   return (
-    <nav className="flex justify-between items-center px-8 py-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md">
+    <nav className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-8 py-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md">
       <div className="flex flex-col gap-1">
         <h1 className="text-3xl font-bold m-0">Feedback Board</h1>
         <p className="text-sm m-0 opacity-90 max-w-md">Share ideas, vote on suggestions, and help improve our platform</p>
